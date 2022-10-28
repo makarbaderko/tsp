@@ -102,6 +102,10 @@ def genetic_algorithm(cities : list) -> list:
     Main function
     """
     POPULATION_SIZE = 100
+    EPOCHS = 10
+    ELITISM_RATE = 2
+    CROSSOVER_RATE = 0.8
+    MUTATION_RATE = 0.1
     population = []
     for i in range(POPULATION_SIZE):
         population.append(Salesman())
@@ -114,6 +118,18 @@ def genetic_algorithm(cities : list) -> list:
         print(Fore.RED + f"Genome {'|'.join(salesman.genome[:10])}...,", end='')
         print(Fore.GREEN +  f"Score {salesman.score}")
 
+    #Main loop
+    for i in range(EPOCHS):
+        new_population = []
+        #Elitism
+        for i in range(0, ELTISM_RATE):
+            new_population.append(sorted(population)[i])
+        #Crossover
+        if random.random() < CROSSOVER_RATE:
+            pass
+        #Mutation
+        if random.random() < MUTATION_RATE:
+            pass
 if __name__ == '__main__':
     cities = read_graph('data.txt')
     #print(cities)
