@@ -90,6 +90,20 @@ def score(genome : list, data : list) -> float:
         score += distance(data[i], data[i+1])
     return score
 
+def breed(genome1, genome2):
+    child = []
+    childP1 = []
+    childP2 = []
+    geneA = int(random.random() * len(genome1))
+    geneB = int(random.random() * len(genome1))
+    startGene = min(geneA, geneB)
+    endGene = max(geneA, geneB)
+    for i in range(startGene, endGene):
+        childP1.append(genome1[i])
+    childP2 = [item for item in genome2 if item not in childP1]
+    child = childP1 + childP2
+    return child
+
 def show_genome(genome : list, cities : list) -> None:
     """
     This function plots the genome graph
@@ -107,7 +121,7 @@ def genetic_algorithm(cities : list) -> Salesman:
     Main function
     """
     POPULATION_SIZE = 100
-    EPOCHS = 200
+    EPOCHS = 1000
     ELITISM_RATE = 2
     CROSSOVER_RATE = 0.8
     MUTATION_RATE = 0.1
@@ -135,30 +149,17 @@ def genetic_algorithm(cities : list) -> Salesman:
             if random.random() < CROSSOVER_RATE:
                 parent1 = sorted(random.choices(population, k=TOURNAMENT_SELECTION_RATE))[0] #Getting the best from the random pool of salesman of size k.
                 parent2 = sorted(random.choices(population, k=TOURNAMENT_SELECTION_RATE))[0]
-                stop_point = random.randint(0, len(cities) - 1)
-                child1 = Salesman()
-                child1.genome = parent1.genome[0:stop_point]
-                child1.score = score(child1.genome, cities)
-                for gene in parent2.genome:
-                    if gene not in child1.genome:
-                        child1.genome = child1.genome + [gene]
-                child2 = Salesman()
-                child2.genome = parent2.genome[0:stop_point]
-                child2.score = score(child2.genome, cities)
-                for gene in parent1.genome:
-                    if gene not in child2.genome:
-                        child2.genome = child2.genome + [gene]
+                child = Salesman()
+                child.genome = breed(parent1.genome, parent2.genome)
+                child.score = score(child.genome, cities)
             else:
-                child1 = random.choice(population)
-                child2 = random.choice(population)
+                child = random.choice(population)
             #Mutation
             if random.random() < MUTATION_RATE:
-                child1.genome = mutate(child1.genome)
-                child2.genome = mutate(child2.genome)
-            child1.score = score(child1.genome, cities)
-            child2.score = score(child2.genome, cities)
-            new_population.append(child1)
-            new_population.append(child2)
+                child.genome = mutate(child.genome)
+            child.score = score(child.genome, cities)
+            child.score = score(child.genome, cities)
+            new_population.append(child)
         population = new_population
         print(Fore.RED + f"Generation: {generation}", end =' ')
         print(Fore.GREEN + f"Best Score: {sorted(population)[0].score}")
