@@ -24,10 +24,13 @@ def read_graph(path : str) -> list:
     data = []
     with open(path) as f:
         while True:
-            line = f.readline()
+            line = f.readline().split()
             if not line:
                 break
-            data.append(line.split())
+            if len(line) == 2:
+                data.append(line)
+            elif len(line) == 3:
+                data.append([line[1], line[2]])
     print("Data was read succefully")
     return data
 
@@ -55,7 +58,7 @@ def init_genome(cities : list) -> list:
     """
     genome = []
     while len(genome) != len(cities):
-        city = str(random.randint(0, len(cities)))
+        city = str(random.randint(0, len(cities) - 1))
         if city in genome:
             continue
         genome .append(city)
@@ -66,7 +69,7 @@ def distance(pointA : list, pointB : list) -> float:
     """
     :type
     HELPER FUNCTION
-    Calculate distance from point A to point B
+    Calculate cartesian distance from point A to point B
     list pointA: [xa, ya]
     list pointB: [xb, yb]
     return float √(xb - xa)^2 + (yb - ya)^2
@@ -86,10 +89,13 @@ def show_genome(genome : list, cities : list) -> None:
     """
     This function plots the genome graph
     """
+    fig, ax = plt.subplots()
     for city in cities:
-        plt.plot(city[0], city[1], "ro")
-    for i in range(0, len(genome) - 1):
-        plt.plot([cities[genome[i]][0], cities[genome[i+1]][0]], [cities[genome[i]][1], cities[genome[i+1]][1]])
+        ax.plot(int(city[0]), int(city[1]), "ro")
+    for i in range(0, len(genome) - 2):
+        ax.plot([int(cities[int(genome[i])][0]), int(cities[int(genome[i+1])][0])], [int(cities[int(genome[i])][1]), int(cities[int(genome[i+1])][1])])
+    plt.plot()
+    plt.title(f"Genome score={score(genome, cities)}")
     plt.show()
 def genetic_algorithm(cities : list) -> list:
     """
@@ -101,13 +107,15 @@ def genetic_algorithm(cities : list) -> list:
         population.append(Salesman())
         population[-1].genome = init_genome(cities)
         population[-1].score = score(population[-1].genome, cities)
+    print(population[0].genome)
     show_genome(population[0].genome, cities)
     print("New salesmen were born")
     for salesman in population:
-        print(Fore.RED + f"Genome {'|'.join(salesman.genome)},", end='')
+        print(Fore.RED + f"Genome {'|'.join(salesman.genome[:10])}...,", end='')
         print(Fore.GREEN +  f"Score {salesman.score}")
 
 if __name__ == '__main__':
     cities = read_graph('data.txt')
+    #print(cities)
     genetic_algorithm(cities)
     print(Style.RESET_ALL)
