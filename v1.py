@@ -106,6 +106,8 @@ def genetic_algorithm(cities : list) -> list:
     ELITISM_RATE = 2
     CROSSOVER_RATE = 0.8
     MUTATION_RATE = 0.1
+    TOURNAMENT_SELECTION_RATE = 4
+    MATING_RATE = 0.5
     population = []
     for i in range(POPULATION_SIZE):
         population.append(Salesman())
@@ -122,14 +124,39 @@ def genetic_algorithm(cities : list) -> list:
     for i in range(EPOCHS):
         new_population = []
         #Elitism
-        for i in range(0, ELTISM_RATE):
+        for i in range(0, ELITISM_RATE):
             new_population.append(sorted(population)[i])
-        #Crossover
-        if random.random() < CROSSOVER_RATE:
-            pass
-        #Mutation
-        if random.random() < MUTATION_RATE:
-            pass
+        for i in range(math.floor(MATING_RATE * len(population))):
+            #Crossover
+            if random.random() < CROSSOVER_RATE:
+                parent1 = sorted(random.choices(population, k=TOURNAMENT_SELECTION_RATE))[0] #Getting the best from the random pool of salesman of size k.
+                parent2 = sorted(random.choices(population, k=TOURNAMENT_SELECTION_RATE))[0]
+                stop_point = random.randint(0, len(cities) - 1)
+                child1 = parent1.genome[0:stop_point]
+                for gene in parent2.genome:
+                    if gene not in child1:
+                        child1.append(gene)
+                child2 = parent2.genome[0:stop_point]
+                for gene in parent1.genome:
+                    if gene not in child2:
+                        child2.append(gene)
+            else:
+                child1 = random.choice(population)
+                child2 = random.choice(population)
+            #Mutation
+            if random.random() < MUTATION_RATE:
+                child1 = mutate(child1)
+                child2 = mutate(child2)
+            new1 = Salesman()
+            new1.genome = child1
+            new1.score = score(child1, cities)
+            new2 = Salesman()
+            new2.genome = child2
+            new2.score = score(child2, cities)
+            new_population.append(new1)
+            new_population.append(new2)
+
+
 if __name__ == '__main__':
     cities = read_graph('data.txt')
     #print(cities)
