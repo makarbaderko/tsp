@@ -107,20 +107,18 @@ def genetic_algorithm(cities : list) -> Salesman:
     Main function
     """
     POPULATION_SIZE = 100
-    EPOCHS = 10
+    EPOCHS = 200
     ELITISM_RATE = 2
     CROSSOVER_RATE = 0.8
     MUTATION_RATE = 0.1
     TOURNAMENT_SELECTION_RATE = 4
     MATING_RATE = 0.5
-    TARGET = 800
+    TARGET = 100
     population = []
     for i in range(POPULATION_SIZE):
         population.append(Salesman())
         population[-1].genome = init_genome(cities)
         population[-1].score = score(population[-1].genome, cities)
-    print(population[0].genome)
-    show_genome(population[0].genome, cities)
     print("New salesmen were born")
     for salesman in population:
         print(Fore.RED + f"Genome {'|'.join(salesman.genome[:10])}...,", end='')
@@ -138,40 +136,40 @@ def genetic_algorithm(cities : list) -> Salesman:
                 parent1 = sorted(random.choices(population, k=TOURNAMENT_SELECTION_RATE))[0] #Getting the best from the random pool of salesman of size k.
                 parent2 = sorted(random.choices(population, k=TOURNAMENT_SELECTION_RATE))[0]
                 stop_point = random.randint(0, len(cities) - 1)
-                child1 = parent1.genome[0:stop_point]
+                child1 = Salesman()
+                child1.genome = parent1.genome[0:stop_point]
+                child1.score = score(child1.genome, cities)
                 for gene in parent2.genome:
-                    if gene not in child1:
-                        child1.append(gene)
-                child2 = parent2.genome[0:stop_point]
+                    if gene not in child1.genome:
+                        child1.genome = child1.genome + [gene]
+                child2 = Salesman()
+                child2.genome = parent2.genome[0:stop_point]
+                child2.score = score(child2.genome, cities)
                 for gene in parent1.genome:
-                    if gene not in child2:
-                        child2.append(gene)
+                    if gene not in child2.genome:
+                        child2.genome = child2.genome + [gene]
             else:
                 child1 = random.choice(population)
                 child2 = random.choice(population)
             #Mutation
             if random.random() < MUTATION_RATE:
-                child1 = mutate(child1)
-                child2 = mutate(child2)
-            new1 = Salesman()
-            new1.genome = child1
-            new1.score = score(child1, cities)
-            new2 = Salesman()
-            new2.genome = child2
-            new2.score = score(child2, cities)
-            new_population.append(new1)
-            new_population.append(new2)
+                child1.genome = mutate(child1.genome)
+                child2.genome = mutate(child2.genome)
+            child1.score = score(child1.genome, cities)
+            child2.score = score(child2.genome, cities)
+            new_population.append(child1)
+            new_population.append(child2)
         population = new_population
         print(Fore.RED + f"Generation: {generation}", end =' ')
         print(Fore.GREEN + f"Best Score: {sorted(population)[0].score}")
+        #print(Fore.GREEN + f"Best Genome: {sorted(population)[0].genome}")
         if sorted(population)[0].score < TARGET:
             break
     return sorted(population)[0]
 
 if __name__ == '__main__':
     cities = read_graph('data.txt')
-    #print(cities)
     best_salesman = genetic_algorithm(cities)
-    show_genome(best_salesman.genome)
+    show_genome(best_salesman.genome, cities)
     print("Execution Finished")
     print(Style.RESET_ALL)
