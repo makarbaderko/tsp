@@ -8,6 +8,11 @@ class Salesman:
     def __init__(self):
         self.genome = []
         self.score = 0
+    def __lt__(self, other):
+        return self.score < other.score
+ 
+    def __gt__(self, other):
+        return self.score > other.score
 
 def read_graph(path : str) -> list:
     """
@@ -97,7 +102,7 @@ def show_genome(genome : list, cities : list) -> None:
     plt.plot()
     plt.title(f"Genome score={score(genome, cities)}")
     plt.show()
-def genetic_algorithm(cities : list) -> list:
+def genetic_algorithm(cities : list) -> Salesman:
     """
     Main function
     """
@@ -108,6 +113,7 @@ def genetic_algorithm(cities : list) -> list:
     MUTATION_RATE = 0.1
     TOURNAMENT_SELECTION_RATE = 4
     MATING_RATE = 0.5
+    TARGET = 800
     population = []
     for i in range(POPULATION_SIZE):
         population.append(Salesman())
@@ -119,9 +125,9 @@ def genetic_algorithm(cities : list) -> list:
     for salesman in population:
         print(Fore.RED + f"Genome {'|'.join(salesman.genome[:10])}...,", end='')
         print(Fore.GREEN +  f"Score {salesman.score}")
-
+  
     #Main loop
-    for i in range(EPOCHS):
+    for generation in range(EPOCHS):
         new_population = []
         #Elitism
         for i in range(0, ELITISM_RATE):
@@ -155,10 +161,17 @@ def genetic_algorithm(cities : list) -> list:
             new2.score = score(child2, cities)
             new_population.append(new1)
             new_population.append(new2)
-
+        population = new_population
+        print(Fore.RED + f"Generation: {generation}", end =' ')
+        print(Fore.GREEN + f"Best Score: {sorted(population)[0].score}")
+        if sorted(population)[0].score < TARGET:
+            break
+    return sorted(population)[0]
 
 if __name__ == '__main__':
     cities = read_graph('data.txt')
     #print(cities)
-    genetic_algorithm(cities)
+    best_salesman = genetic_algorithm(cities)
+    show_genome(best_salesman.genome)
+    print("Execution Finished")
     print(Style.RESET_ALL)
