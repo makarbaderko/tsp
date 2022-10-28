@@ -1,12 +1,15 @@
 import random
 import math
+from colorama import Fore, Style
+import matplotlib.pyplot as plt
+
 
 class Salesman:
     def __init__(self):
-        self.genome = ""
+        self.genome = []
         self.score = 0
 
-def read_graph(path):
+def read_graph(path : str) -> list:
     """
     str path: path to the file wich will be read
     This function reads the coordinates of graph's vertices.
@@ -28,7 +31,7 @@ def read_graph(path):
     print("Data was read succefully")
     return data
 
-def mutate(genome):
+def mutate(genome : list) -> list:
     """
     str genome: route of the salesman by the point number in list of cities ("0123450")
     This function creates a mutation in the genome, swapping 2 cities randomly
@@ -46,28 +49,31 @@ def mutate(genome):
     genome[-1] = genome[0]
     return genome
 
-def init_genome(cities):
+def init_genome(cities : list) -> list:
     """
     list n_cities: list of cities in the TSP problem
     """
-    genome = ""
+    genome = []
     while len(genome) != len(cities):
         city = str(random.randint(0, len(cities)))
         if city in genome:
             continue
-        genome += city
-    genome += genome[0]
+        genome .append(city)
+    genome.append(genome[0])
     return genome
 
-def distance(pointA, pointB):
+def distance(pointA : list, pointB : list) -> float:
     """
+    :type
     HELPER FUNCTION
     Calculate distance from point A to point B
-    AB = √(xb - xa)^2 + (yb - ya)^2
+    list pointA: [xa, ya]
+    list pointB: [xb, yb]
+    return float √(xb - xa)^2 + (yb - ya)^2
     """
     return math.sqrt((int(pointB[0]) - int(pointA[0]))**2 + (int(pointB[1]) - int(pointA[1]))**2)
 
-def score(genome, data):
+def score(genome : list, data : list) -> float:
     """
     Score the TSP problem solution
     """
@@ -76,21 +82,32 @@ def score(genome, data):
         score += distance(data[i], data[i+1])
     return score
 
-def genetic_algorithm(cities):
+def show_genome(genome : list, cities : list) -> None:
+    """
+    This function plots the genome graph
+    """
+    for city in cities:
+        plt.plot(city[0], city[1], "ro")
+    for i in range(0, len(genome) - 1):
+        plt.plot([cities[genome[i]][0], cities[genome[i+1]][0]], [cities[genome[i]][1], cities[genome[i+1]][1]])
+    plt.show()
+def genetic_algorithm(cities : list) -> list:
     """
     Main function
     """
     POPULATION_SIZE = 100
     population = []
-    newSalesman = Salesman()
     for i in range(POPULATION_SIZE):
-        newSalesman.genome = init_genome(cities)
-        newSalesman.score = score(newSalesman.genome, cities)
-        population.append(newSalesman)
+        population.append(Salesman())
+        population[-1].genome = init_genome(cities)
+        population[-1].score = score(population[-1].genome, cities)
+    show_genome(population[0].genome, cities)
     print("New salesmen were born")
     for salesman in population:
-        print(f"Genome {salesman.genome}, Score {salesman.score}")
+        print(Fore.RED + f"Genome {'|'.join(salesman.genome)},", end='')
+        print(Fore.GREEN +  f"Score {salesman.score}")
 
 if __name__ == '__main__':
     cities = read_graph('data.txt')
     genetic_algorithm(cities)
+    print(Style.RESET_ALL)
